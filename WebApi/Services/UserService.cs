@@ -31,32 +31,41 @@
 
         private async Task<AppUser> GetOrCreateExternalLoginUser(string provider, string key, string email, string firstName, string lastName)
         {
-            var user = await _userManager.FindByLoginAsync(provider, key);
-          
-            if (user != null)
-                return user;
-
-            user = await _userManager.FindByEmailAsync(email);
-
-            if (user == null)
+            try
             {
-                user = new AppUser
-                {
-                    Email = email,
-                    UserName = email,
-                    FirstName = firstName,
-                    LastName = lastName,
-                    Id = key,
-                };
-                await _userManager.CreateAsync(user);
-                var info = new UserLoginInfo(provider, key, provider.ToUpperInvariant());
-                var result = await _userManager.AddLoginAsync(user, info);
-              
-                if(!result.Succeeded)
-                    throw new AppException(string.Join(",", result.Errors.Select(x => x.Description).ToList()));
-            }
+              var user = await _userManager.FindByLoginAsync(provider, key);
 
-            return user;
+                if (user != null)
+                    return user;
+
+                user = await _userManager.FindByEmailAsync(email);
+
+                if (user == null)
+                {
+                    user = new AppUser
+                    {
+                        Email = email,
+                        UserName = email,
+                        FirstName = firstName,
+                        LastName = lastName,
+                        Id = key,
+                    };
+                    await _userManager.CreateAsync(user);
+                    var info = new UserLoginInfo(provider, key, provider.ToUpperInvariant());
+                    var result = await _userManager.AddLoginAsync(user, info);
+
+                    if (!result.Succeeded)
+                        throw new AppException(string.Join(",", result.Errors.Select(x => x.Description).ToList()));
+                }
+
+                return user;
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
+          
         }
     }
 }
